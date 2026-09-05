@@ -399,30 +399,105 @@ footer li:hover{color:white;}
   </div>
 </div>
 
-<!-- LOGIN -->
-<div class="modal-overlay" id="loginModal">
-  <div class="modal">
+
+<!-- AUTH MODAL -->
+<div class="modal-overlay" id="authModal">
+  <div class="modal" style="max-width:440px;width:100%;">
     <div class="modal-header">
-      <div><h2>Student Login</h2><p style="font-size:11px;color:#777;margin-top:4px;">Login to manage your campus orders.</p></div>
-      <button class="close" onclick="closeLogin()">×</button>
+      <div id="authModalTitle"><h2>Student Login</h2><p style="font-size:11px;color:#777;margin-top:4px;">Login to manage your campus orders.</p></div>
+      <button class="close" onclick="closeAuthModal()">×</button>
     </div>
-    <div class="form-group"><label>Student ID / Roll Number</label><input id="studentId" placeholder="e.g. 23BCS10452"></div>
-    <div class="form-group"><label>Password</label><input type="password" placeholder="Enter password"></div>
-    <button class="modal-btn" onclick="loginDemo()">Sign In</button>
-    <p style="text-align:center;font-size:11px;color:#777;margin-top:14px;">Don't have an account? Registration can be connected to Firebase/Supabase.</p>
+    <div id="authTabBar" style="display:flex;gap:8px;margin-bottom:18px;">
+      <button id="tabLogin" class="auth-tab active" onclick="switchAuthTab('login')">Login</button>
+      <button id="tabRegister" class="auth-tab" onclick="switchAuthTab('register')">Register</button>
+    </div>
+
+    <!-- Login Tab -->
+    <div id="loginTab">
+      <div class="form-group"><label>Student ID / Roll No *</label><input id="loginUid" placeholder="e.g. 23BCS10452"></div>
+      <div class="form-group"><label>Password *</label><input type="password" id="loginPass" placeholder="Enter password"></div>
+      <button class="modal-btn" onclick="handleLogin()">Sign In</button>
+      <p id="loginError" style="color:#ef4444;font-size:12px;margin-top:10px;display:none;">Invalid Student ID or password.</p>
+    </div>
+
+    <!-- Register Tab -->
+    <div id="registerTab" style="display:none;">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+        <div class="form-group"><label>Full Name *</label><input id="regName" placeholder="Harpreet Singh"></div>
+        <div class="form-group"><label>Student ID *</label><input id="regUid" placeholder="23BCS10452"></div>
+        <div class="form-group"><label>Password *</label><input type="password" id="regPass" placeholder="Min 6 chars"></div>
+        <div class="form-group"><label>Phone (WhatsApp) *</label><input id="regPhone" placeholder="+91 70099 18303"></div>
+        <div class="form-group" style="grid-column:1/-1;"><label>Email</label><input id="regEmail" placeholder="student@gmail.com"></div>
+        <div class="form-group"><label>Hostel & Wing</label>
+          <select id="regHostel">
+            <option>Boys Hostel - Wing A</option><option>Boys Hostel - Wing B</option><option>Boys Hostel - Wing C</option>
+            <option>Girls Hostel - Wing A</option><option>Girls Hostel - Wing B</option><option>Girls Hostel - Wing C</option>
+            <option>Day Scholar</option>
+          </select>
+        </div>
+        <div class="form-group"><label>Floor & Room</label>
+          <div style="display:flex;gap:6px;">
+            <select id="regFloor" style="width:60%;">
+              <option>Floor 1</option><option>Floor 2</option><option>Floor 3</option><option>Floor 4</option>
+              <option>Floor 5</option><option>Floor 6</option><option>Floor 7</option><option>Floor 8</option>
+              <option>Floor 9</option><option>Floor 10</option><option>Floor 11</option>
+            </select>
+            <input id="regRoom" placeholder="Rm" style="width:40%;">
+          </div>
+        </div>
+      </div>
+      <button class="modal-btn" onclick="handleRegister()">Create Account</button>
+      <p id="registerError" style="color:#ef4444;font-size:12px;margin-top:10px;display:none;"></p>
+    </div>
+  </div>
+</div>
+
+<!-- USER PROFILE MODAL -->
+<div class="modal-overlay" id="profileModal">
+  <div class="modal" style="max-width:400px;width:100%;text-align:center;">
+    <button class="close" onclick="closeProfileModal()" style="float:right;">×</button>
+    <div id="profileContent"></div>
+  </div>
+</div>
+
+<!-- CHECKOUT MODAL -->
+<div class="modal-overlay" id="checkoutModal">
+  <div class="modal checkout-modal">
+    <button class="close" onclick="closeCheckoutModal()" style="float:right;font-size:20px;">×</button>
+    <div id="checkoutContent"></div>
   </div>
 </div>
 
 <div class="toast" id="toast"></div>
 
+<style>
+.auth-tab{padding:7px 18px;border-radius:6px;border:1px solid #e5e7eb;background:#f7f8fa;font-weight:600;font-size:13px;cursor:pointer;}
+.auth-tab.active{background:#111827;color:#fff;border-color:#111827;}
+.checkout-modal{max-width:560px;width:100%;max-height:90vh;overflow-y:auto;}
+.checkout-steps{display:flex;gap:0;margin-bottom:20px;border-bottom:2px solid #e5e7eb;padding-bottom:12px;}
+.step-ind{font-size:12px;font-weight:600;color:#9ca3af;padding:0 10px;}
+.step-ind.active{color:#0c831f;}
+.checkout-modal .form-group{margin-bottom:12px;}
+.checkout-modal label{font-size:12px;font-weight:600;color:#374151;display:block;margin-bottom:4px;}
+.checkout-modal input,.checkout-modal select{width:100%;padding:9px 12px;border:1px solid #d1d5db;border-radius:7px;font-size:13px;}
+.pay-tab{flex:1;padding:10px;border:2px solid #e5e7eb;border-radius:8px;text-align:center;cursor:pointer;background:#f9fafb;font-size:13px;font-weight:600;}
+.pay-tab.active{border-color:#0c831f;background:#f0fdf4;color:#0c831f;}
+.bank-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid #f3f4f6;font-size:13px;}
+.copy-btn{background:#e5e7eb;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;cursor:pointer;}
+.qr-img{width:160px;height:160px;border:1px solid #e5e7eb;border-radius:8px;}
+.order-history-item{background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;padding:12px;margin-bottom:10px;}
+.btn-green{background:#0c831f;color:#fff;border:none;padding:11px 22px;border-radius:8px;font-weight:700;font-size:14px;cursor:pointer;}
+.btn-gray{background:#e5e7eb;color:#374151;border:none;padding:11px 18px;border-radius:8px;font-weight:600;font-size:13px;cursor:pointer;}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:2000;align-items:center;justify-content:center;padding:16px;}
+.modal-overlay.show{display:flex;}
+</style>
+
 <script src="js/products.js"></script>
 <script src="js/store-data.js"></script>
 <script>
 // ============================================================
-// PRODUCT DATABASE — uses real assets/images + Unsplash fallback
-// Admin panel changes (via store-data.js) are merged in at runtime
+// PRODUCT DATABASE — admin overrides merged at runtime
 // ============================================================
-
 const baseProducts = [
   {id:1,  name:"Practical Notebook (200 Pages)", category:"Stationery",       price:110, mrp:120,  image:"assets/images/practical_notebook_200.jpg",  emoji:"📓", description:"Science lab notebook, 200 pages",        rating:"4.9"},
   {id:2,  name:"Practical Notebook (144 Pages)", category:"Stationery",       price:70,  mrp:80,   image:"assets/images/practical_notebook_144.jpg",  emoji:"📓", description:"Science lab notebook, 144 pages",        rating:"4.8"},
@@ -446,7 +521,14 @@ const baseProducts = [
   {id:20, name:"Cotton Bedsheet + Pillow Cover",  category:"Hostel Essentials", price:399, mrp:599,  image:"https://images.unsplash.com/photo-1584100936595-c0654b55a2e2?auto=format&fit=crop&w=600&q=80", emoji:"🛏️", description:"200 TC, single bed size", rating:"4.7"}
 ];
 
-// Merge base products with admin overrides from store-data.js
+const PAYMENT_INFO = {
+  bank: { bankName:"State Bank of India (SBI)", accountNumber:"43626003401", accountType:"Saving", ifscCode:"SBIN0051455", accountHolder:"Harpreet Singh / Campus Store" },
+  upi:  { gpay:"singhharpreet5975@okaxis", phonepe:"7009918303@ybl" },
+  email:"singhharpreet5975@gmail.com",
+  whatsapp:"917009918303"
+};
+
+// ---- Merge admin overrides from store-data.js ----
 function getMergedProducts() {
   try {
     const overrides = JSON.parse(localStorage.getItem('store_product_overrides') || '{}');
@@ -456,46 +538,155 @@ function getMergedProducts() {
       .map(p => {
         const ov = overrides[String(p.id)];
         if (!ov) return p;
-        // Map admin product fields to frontend format
         return {
-          id: p.id,
-          name: ov.name || p.name,
-          category: ov.categoryLabel || ov.category || p.category,
-          price: ov.price || p.price,
-          mrp: ov.originalPrice || p.mrp,
-          image: ov.image || p.image,
-          emoji: p.emoji,
+          ...p,
+          name:        ov.name        || p.name,
+          category:    ov.categoryLabel || ov.category || p.category,
+          price:       typeof ov.price === 'number' ? ov.price : p.price,
+          mrp:         typeof ov.originalPrice === 'number' ? ov.originalPrice : p.mrp,
+          image:       ov.image       || p.image,
           description: ov.description || p.description,
-          rating: String(ov.rating || p.rating)
+          rating:      String(ov.rating || p.rating)
         };
       });
-    // Append admin-only new products
     Object.keys(overrides).forEach(id => {
       if (!baseProducts.find(p => String(p.id) === id)) {
         const ov = overrides[id];
-        merged.push({
-          id: ov.id,
-          name: ov.name,
-          category: ov.categoryLabel || ov.category,
-          price: ov.price,
-          mrp: ov.originalPrice || ov.price,
-          image: ov.image || '',
-          emoji: '📦',
-          description: ov.description || '',
-          rating: String(ov.rating || '4.5')
-        });
+        merged.push({ id:ov.id, name:ov.name, category:ov.categoryLabel||ov.category, price:ov.price,
+                      mrp:ov.originalPrice||ov.price, image:ov.image||'', emoji:'📦',
+                      description:ov.description||'', rating:String(ov.rating||'4.5') });
       }
     });
     return merged;
-  } catch(e) {
-    return [...baseProducts];
+  } catch(e) { return [...baseProducts]; }
+}
+
+let products        = getMergedProducts();
+let cart            = JSON.parse(localStorage.getItem('unicampus-cart')) || [];
+let currentCategory = 'All';
+let displayedProducts = [...products];
+let deliveryInfo    = {};
+let checkoutStep    = 1;
+let paymentMethod   = 'upi';
+
+// ---- USER AUTH ----
+const USERS_KEY = 'unicampus_users';
+const SESSION_KEY = 'unicampus_session';
+
+function getUsers() { return JSON.parse(localStorage.getItem(USERS_KEY) || '{}'); }
+function saveUsers(u) { localStorage.setItem(USERS_KEY, JSON.stringify(u)); }
+function getSession() { return JSON.parse(localStorage.getItem(SESSION_KEY) || 'null'); }
+function saveSession(u) { localStorage.setItem(SESSION_KEY, JSON.stringify(u)); }
+function clearSession() { localStorage.removeItem(SESSION_KEY); }
+
+function updateHeaderAuth() {
+  const user = getSession();
+  const loginBtn = document.querySelector('.login-btn');
+  if (!loginBtn) return;
+  if (user) {
+    loginBtn.textContent = '👤 ' + (user.name ? user.name.split(' ')[0] : user.uid);
+    loginBtn.onclick = openProfile;
+  } else {
+    loginBtn.textContent = 'Login';
+    loginBtn.onclick = openLogin;
   }
 }
 
-let products = getMergedProducts();
-let cart = JSON.parse(localStorage.getItem('unicampus-cart')) || [];
-let currentCategory = 'All';
-let displayedProducts = [...products];
+function openLogin()   { switchAuthTab('login');  document.getElementById('authModal').classList.add('show'); }
+function closeAuthModal(){ document.getElementById('authModal').classList.remove('show'); }
+function openProfile() { renderProfile(); document.getElementById('profileModal').classList.add('show'); }
+function closeProfileModal(){ document.getElementById('profileModal').classList.remove('show'); }
+
+function switchAuthTab(tab) {
+  document.getElementById('loginTab').style.display    = tab === 'login'    ? '' : 'none';
+  document.getElementById('registerTab').style.display = tab === 'register' ? '' : 'none';
+  document.getElementById('tabLogin').classList.toggle('active', tab === 'login');
+  document.getElementById('tabRegister').classList.toggle('active', tab === 'register');
+}
+
+function handleLogin() {
+  const uid  = document.getElementById('loginUid').value.trim();
+  const pass = document.getElementById('loginPass').value;
+  if (!uid || !pass) { showToast('Fill in all fields'); return; }
+  const users = getUsers();
+  const user  = users[uid.toLowerCase()];
+  if (!user || user.password !== pass) {
+    document.getElementById('loginError').style.display = 'block'; return;
+  }
+  document.getElementById('loginError').style.display = 'none';
+  saveSession(user);
+  closeAuthModal();
+  updateHeaderAuth();
+  showToast('Welcome back, ' + (user.name || uid) + '! 🎓');
+}
+
+function handleRegister() {
+  const name   = document.getElementById('regName').value.trim();
+  const uid    = document.getElementById('regUid').value.trim();
+  const pass   = document.getElementById('regPass').value;
+  const phone  = document.getElementById('regPhone').value.trim();
+  const email  = document.getElementById('regEmail').value.trim();
+  const hostel = document.getElementById('regHostel').value;
+  const floor  = document.getElementById('regFloor').value;
+  const room   = document.getElementById('regRoom').value.trim();
+  const errEl  = document.getElementById('registerError');
+
+  if (!name || !uid || !pass || !phone) { errEl.textContent='Fill all required fields'; errEl.style.display='block'; return; }
+  if (pass.length < 6) { errEl.textContent='Password must be 6+ chars'; errEl.style.display='block'; return; }
+
+  const users = getUsers();
+  if (users[uid.toLowerCase()]) { errEl.textContent='Student ID already registered'; errEl.style.display='block'; return; }
+
+  const newUser = { uid, name, password: pass, phone, email, hostel, floor, room };
+  users[uid.toLowerCase()] = newUser;
+  saveUsers(users);
+  saveSession(newUser);
+  errEl.style.display = 'none';
+  closeAuthModal();
+  updateHeaderAuth();
+  showToast('Account created! Welcome, ' + name + ' 🎉');
+}
+
+function handleLogout() {
+  clearSession();
+  closeProfileModal();
+  updateHeaderAuth();
+  showToast('Logged out');
+}
+
+function renderProfile() {
+  const user = getSession();
+  if (!user) { closeProfileModal(); openLogin(); return; }
+
+  const orders = JSON.parse(localStorage.getItem('store_orders') || '[]')
+    .filter(o => o.student && (o.student.custUid === user.uid || o.student.custPhone === user.phone));
+
+  document.getElementById('profileContent').innerHTML = `
+    <div style="width:56px;height:56px;background:#111827;color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700;margin:0 auto 12px;">
+      ${(user.name||user.uid).charAt(0).toUpperCase()}
+    </div>
+    <h3 style="font-size:18px;font-weight:700;">${user.name||user.uid}</h3>
+    <p style="font-size:12px;color:#777;margin:4px 0;">ID: ${user.uid} • ${user.phone||''}</p>
+    <p style="font-size:12px;color:#777;margin-bottom:18px;">${user.hostel||''} ${user.floor?'• '+user.floor:''} ${user.room?'• Room '+user.room:''}</p>
+
+    <div style="text-align:left;">
+      <h4 style="font-size:14px;font-weight:700;margin-bottom:10px;">My Orders (${orders.length})</h4>
+      ${orders.length === 0 ? '<p style="color:#9ca3af;font-size:13px;">No orders yet.</p>' :
+        orders.map(o => `
+          <div class="order-history-item">
+            <div style="display:flex;justify-content:space-between;font-size:13px;">
+              <strong>#${o.orderId}</strong>
+              <span style="color:${o.status==='Completed'?'#0c831f':o.status==='Cancelled'?'#ef4444':'#f59e0b'};font-weight:600;">${o.status||'Processing'}</span>
+            </div>
+            <div style="font-size:12px;color:#6b7280;margin-top:4px;">${o.orderTime||''} • ₹${o.total}</div>
+            <div style="font-size:12px;color:#374151;margin-top:4px;">${(o.items||[]).map(i=>i.name+' x'+i.qty).join(', ')}</div>
+          </div>
+        `).join('')
+      }
+    </div>
+    <button onclick="handleLogout()" style="margin-top:16px;background:#ef4444;color:#fff;border:none;padding:9px 22px;border-radius:7px;font-weight:600;cursor:pointer;width:100%;">Log Out</button>
+  `;
+}
 
 // ============================================================
 // RENDER PRODUCTS
@@ -506,26 +697,19 @@ function renderProducts(list) {
     list.length + (list.length === 1 ? ' product' : ' products');
 
   if (!list.length) {
-    grid.innerHTML = `
-      <div class="empty">
-        <div class="empty-icon">🔎</div>
-        <h3>No products found</h3>
-        <p style="color:#777;margin-top:6px;">Try another search or category.</p>
-      </div>`;
+    grid.innerHTML = `<div class="empty"><div class="empty-icon">🔎</div><h3>No products found</h3><p style="color:#777;margin-top:6px;">Try another search or category.</p></div>`;
     return;
   }
 
   grid.innerHTML = list.map(product => {
-    const discount = product.mrp > product.price
-      ? Math.round((1 - product.price / product.mrp) * 100) : 0;
+    const discount = product.mrp > product.price ? Math.round((1 - product.price / product.mrp) * 100) : 0;
     const cartItem = cart.find(i => i.id === product.id);
     const controlHtml = cartItem ? `
       <div class="qty-stepper" id="stepper-${product.id}">
         <button onclick="changeQty(${product.id},-1)" aria-label="Decrease">−</button>
         <span>${cartItem.quantity}</span>
         <button onclick="changeQty(${product.id},1)" aria-label="Increase">+</button>
-      </div>` : `
-      <button class="add" id="stepper-${product.id}" onclick="addToCart(${product.id})">ADD</button>`;
+      </div>` : `<button class="add" id="stepper-${product.id}" onclick="addToCart(${product.id})">ADD</button>`;
 
     return `
       <div class="product">
@@ -554,38 +738,29 @@ function renderProducts(list) {
   }).join('');
 }
 
-// Update just the stepper for one product (no full re-render)
 function syncStepper(id) {
   const item = cart.find(i => i.id === id);
   const el = document.getElementById('stepper-' + id);
   if (!el) return;
   if (item) {
-    el.outerHTML = `
-      <div class="qty-stepper" id="stepper-${id}">
-        <button onclick="changeQty(${id},-1)" aria-label="Decrease">−</button>
-        <span>${item.quantity}</span>
-        <button onclick="changeQty(${id},1)" aria-label="Increase">+</button>
-      </div>`;
+    el.outerHTML = `<div class="qty-stepper" id="stepper-${id}"><button onclick="changeQty(${id},-1)">−</button><span>${item.quantity}</span><button onclick="changeQty(${id},1)">+</button></div>`;
   } else {
     el.outerHTML = `<button class="add" id="stepper-${id}" onclick="addToCart(${id})">ADD</button>`;
   }
 }
 
 // ============================================================
-// CART OPERATIONS
+// CART
 // ============================================================
 function addToCart(id) {
   const existing = cart.find(i => i.id === id);
-  if (existing) {
-    existing.quantity++;
-  } else {
+  if (existing) { existing.quantity++; }
+  else {
     const product = products.find(p => p.id === id);
     if (!product) return;
     cart.push({ ...product, quantity: 1 });
   }
-  saveCart();
-  syncStepper(id);
-  updateCartCount();
+  saveCart(); syncStepper(id); updateCartCount();
   const p = products.find(p => p.id === id);
   showToast((p ? p.name : 'Item') + ' added to cart 🛒');
 }
@@ -594,19 +769,11 @@ function changeQty(id, delta) {
   const item = cart.find(i => i.id === id);
   if (!item) return;
   item.quantity += delta;
-  if (item.quantity <= 0) {
-    cart = cart.filter(i => i.id !== id);
-    showToast('Item removed from cart');
-  }
-  saveCart();
-  syncStepper(id);
-  updateCartCount();
-  updateCartDrawer();
+  if (item.quantity <= 0) { cart = cart.filter(i => i.id !== id); showToast('Item removed'); }
+  saveCart(); syncStepper(id); updateCartCount(); updateCartDrawer();
 }
 
-function saveCart() {
-  localStorage.setItem('unicampus-cart', JSON.stringify(cart));
-}
+function saveCart() { localStorage.setItem('unicampus-cart', JSON.stringify(cart)); }
 
 function updateCartCount() {
   const count = cart.reduce((s, i) => s + i.quantity, 0);
@@ -616,25 +783,13 @@ function updateCartCount() {
 function updateCartDrawer() {
   const container = document.getElementById('cartItems');
   if (!container) return;
-
   if (!cart.length) {
-    container.innerHTML = `
-      <div class="empty">
-        <div class="empty-icon">🛒</div>
-        <h3>Your cart is empty</h3>
-        <p style="color:#777;margin-top:5px;">Add some campus essentials.</p>
-      </div>`;
-    document.getElementById('cartTotal').textContent = '0';
-    return;
+    container.innerHTML = `<div class="empty"><div class="empty-icon">🛒</div><h3>Your cart is empty</h3><p style="color:#777;margin-top:5px;">Add some campus essentials.</p></div>`;
+    document.getElementById('cartTotal').textContent = '0'; return;
   }
-
   container.innerHTML = cart.map(item => `
     <div class="cart-item">
-      <div class="cart-image">
-        ${item.image
-          ? `<img src="${item.image}" onerror="this.style.display='none'">`
-          : `<span>${item.emoji || '📦'}</span>`}
-      </div>
+      <div class="cart-image">${item.image ? `<img src="${item.image}" onerror="this.style.display='none'">` : `<span>${item.emoji||'📦'}</span>`}</div>
       <div class="cart-info">
         <strong>${item.name}</strong>
         <span class="cart-price">₹${item.price} × ${item.quantity} = ₹${item.price * item.quantity}</span>
@@ -645,24 +800,12 @@ function updateCartDrawer() {
         </div>
       </div>
     </div>`).join('');
-
   const total = cart.reduce((s, i) => s + i.price * i.quantity, 0);
   document.getElementById('cartTotal').textContent = total;
 }
 
-function updateCart() {
-  updateCartCount();
-  updateCartDrawer();
-}
-
-function openCart() {
-  document.getElementById('cartOverlay').classList.add('open');
-  updateCartDrawer();
-}
-
-function closeCart() {
-  document.getElementById('cartOverlay').classList.remove('open');
-}
+function openCart()  { document.getElementById('cartOverlay').classList.add('open'); updateCartDrawer(); }
+function closeCart() { document.getElementById('cartOverlay').classList.remove('open'); }
 
 // ============================================================
 // FILTER / SEARCH / SORT
@@ -670,14 +813,7 @@ function closeCart() {
 function filterCategory(category, button) {
   currentCategory = category;
   document.querySelectorAll('.filter').forEach(b => b.classList.remove('active'));
-  if (button) {
-    button.classList.add('active');
-  } else {
-    const map = {All:'all', Stationery:'stationery', 'Gym Essentials':'gym', 'Hostel Essentials':'hostel', 'Laptop Accessories':'laptop'};
-    document.querySelectorAll('.filter').forEach(b => {
-      if (b.textContent.toLowerCase().includes(map[category] || 'all')) b.classList.add('active');
-    });
-  }
+  if (button) button.classList.add('active');
   searchProducts(false);
   document.getElementById('products').scrollIntoView({behavior:'smooth'});
 }
@@ -699,7 +835,7 @@ function searchProducts(scroll = true) {
 function sortProducts(updateSearch = true) {
   let list = [...displayedProducts];
   const sort = document.getElementById('sortSelect').value;
-  if (sort === 'low') list.sort((a, b) => a.price - b.price);
+  if (sort === 'low')  list.sort((a, b) => a.price - b.price);
   if (sort === 'high') list.sort((a, b) => b.price - a.price);
   if (sort === 'name') list.sort((a, b) => a.name.localeCompare(b.name));
   renderProducts(list);
@@ -716,30 +852,251 @@ function showAll() {
 }
 
 // ============================================================
-// LOGIN / AUTH
-// ============================================================
-function openLogin() { document.getElementById('loginModal').classList.add('show'); }
-function closeLogin() { document.getElementById('loginModal').classList.remove('show'); }
-function loginDemo() {
-  const id = document.getElementById('studentId').value.trim();
-  if (!id) { showToast('Please enter your Student ID'); return; }
-  closeLogin();
-  showToast('Login system ready to connect 🚀');
-}
-
-// ============================================================
-// CHECKOUT / COUPON / TOAST
+// CHECKOUT — 3 STEPS
 // ============================================================
 function checkout() {
   if (!cart.length) { showToast('Your cart is empty!'); return; }
-  const total = cart.reduce((s, i) => s + i.price * i.quantity, 0);
-  alert('Order Total: ₹' + total + '\n\nCheckout can be connected to Razorpay, UPI or Cash on Delivery.');
+  closeCart();
+  checkoutStep = 1;
+  renderCheckoutStep1();
+  document.getElementById('checkoutModal').classList.add('show');
 }
 
+function closeCheckoutModal() { document.getElementById('checkoutModal').classList.remove('show'); }
+
+function renderCheckoutStep1() {
+  const user    = getSession();
+  const subtotal = cart.reduce((s, i) => s + i.price * i.quantity, 0);
+  document.getElementById('checkoutContent').innerHTML = `
+    <div class="checkout-steps">
+      <span class="step-ind active">1. Delivery Details</span>
+      <span class="step-ind">2. Payment</span>
+      <span class="step-ind">3. Confirmation</span>
+    </div>
+    <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:10px 14px;margin-bottom:16px;font-size:13px;font-weight:600;color:#166534;">
+      ${cart.length} item(s) • Total: ₹${subtotal} (Free Campus Delivery)
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+      <div class="form-group"><label>Student Full Name *</label><input id="c_name" value="${user?user.name:''}"></div>
+      <div class="form-group"><label>Student ID *</label><input id="c_uid" value="${user?user.uid:''}"></div>
+      <div class="form-group"><label>Phone (WhatsApp) *</label><input id="c_phone" value="${user?user.phone:''}"></div>
+      <div class="form-group"><label>Email *</label><input id="c_email" value="${user?user.email:''}"></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1.2fr 0.7fr 0.7fr;gap:8px;">
+      <div class="form-group"><label>Hostel & Wing *</label>
+        <select id="c_hostel">
+          <optgroup label="Boys Hostel">
+            <option ${user&&user.hostel==='Boys Hostel - Wing A'?'selected':''}>Boys Hostel - Wing A</option>
+            <option ${user&&user.hostel==='Boys Hostel - Wing B'?'selected':''}>Boys Hostel - Wing B</option>
+            <option ${user&&user.hostel==='Boys Hostel - Wing C'?'selected':''}>Boys Hostel - Wing C</option>
+          </optgroup>
+          <optgroup label="Girls Hostel">
+            <option ${user&&user.hostel==='Girls Hostel - Wing A'?'selected':''}>Girls Hostel - Wing A</option>
+            <option ${user&&user.hostel==='Girls Hostel - Wing B'?'selected':''}>Girls Hostel - Wing B</option>
+            <option ${user&&user.hostel==='Girls Hostel - Wing C'?'selected':''}>Girls Hostel - Wing C</option>
+          </optgroup>
+          <option>Day Scholar</option>
+        </select>
+      </div>
+      <div class="form-group"><label>Floor *</label>
+        <select id="c_floor">
+          ${[1,2,3,4,5,6,7,8,9,10,11].map(n=>`<option ${user&&user.floor==='Floor '+n?'selected':''}>Floor ${n}</option>`).join('')}
+        </select>
+      </div>
+      <div class="form-group"><label>Room No *</label><input id="c_room" value="${user?user.room:''}"></div>
+    </div>
+    <div class="form-group"><label>Delivery Notes</label><input id="c_notes" placeholder="e.g. Call before arriving"></div>
+    <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:14px;">
+      <button class="btn-gray" onclick="closeCheckoutModal()">Cancel</button>
+      <button class="btn-green" onclick="submitStep1()">Proceed to Payment →</button>
+    </div>`;
+}
+
+function submitStep1() {
+  const name  = document.getElementById('c_name').value.trim();
+  const uid   = document.getElementById('c_uid').value.trim();
+  const phone = document.getElementById('c_phone').value.trim();
+  const email = document.getElementById('c_email').value.trim();
+  if (!name || !uid || !phone) { showToast('Fill all required fields', 'error'); return; }
+  deliveryInfo = {
+    custName: name, custUid: uid, custPhone: phone, custEmail: email,
+    custHostel: document.getElementById('c_hostel').value,
+    custFloor:  document.getElementById('c_floor').value,
+    custRoom:   document.getElementById('c_room').value.trim(),
+    custNotes:  document.getElementById('c_notes').value.trim()
+  };
+  renderCheckoutStep2();
+}
+
+function renderCheckoutStep2() {
+  const subtotal = cart.reduce((s, i) => s + i.price * i.quantity, 0);
+  const gpay   = PAYMENT_INFO.upi.gpay;
+  const phonepe= PAYMENT_INFO.upi.phonepe;
+  const upiURI = `upi://pay?pa=${gpay}&pn=Campus%20Store&am=${subtotal}&cu=INR&tn=Order`;
+  const qrUrl  = `https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${encodeURIComponent(upiURI)}`;
+
+  document.getElementById('checkoutContent').innerHTML = `
+    <div class="checkout-steps">
+      <span class="step-ind" onclick="renderCheckoutStep1()" style="cursor:pointer;">✓ 1. Delivery</span>
+      <span class="step-ind active">2. Payment</span>
+      <span class="step-ind">3. Confirmation</span>
+    </div>
+    <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:10px 14px;margin-bottom:16px;font-size:13px;">
+      <strong>Payable: ₹${subtotal}</strong> → ${deliveryInfo.custHostel}, ${deliveryInfo.custFloor}, Room ${deliveryInfo.custRoom}
+    </div>
+    <div style="display:flex;gap:10px;margin-bottom:14px;">
+      <div class="pay-tab ${paymentMethod==='upi'?'active':''}" onclick="setPayMethod('upi')">⚡ UPI / GPay / PhonePe</div>
+      <div class="pay-tab ${paymentMethod==='bank'?'active':''}" onclick="setPayMethod('bank')">🏛️ SBI Bank Transfer</div>
+    </div>
+
+    <div id="upiView" style="display:${paymentMethod==='upi'?'':'none'};text-align:center;margin-bottom:14px;">
+      <img class="qr-img" src="${qrUrl}" alt="UPI QR">
+      <div style="margin-top:10px;font-size:13px;">
+        <div class="bank-row"><span>Google Pay ID</span><span>${gpay} <span class="copy-btn" onclick="copyText('${gpay}','GPay ID copied!')">Copy</span></span></div>
+        <div class="bank-row"><span>PhonePe ID</span><span>${phonepe} <span class="copy-btn" onclick="copyText('${phonepe}','PhonePe ID copied!')">Copy</span></span></div>
+      </div>
+      <a href="${upiURI}" style="display:inline-block;margin-top:10px;background:#111827;color:#fff;padding:8px 16px;border-radius:6px;font-size:12px;font-weight:600;">Open UPI App on Mobile</a>
+    </div>
+
+    <div id="bankView" style="display:${paymentMethod==='bank'?'':'none'};margin-bottom:14px;">
+      <div class="bank-row"><span>Bank Name</span><span>${PAYMENT_INFO.bank.bankName}</span></div>
+      <div class="bank-row"><span>Account No</span><span><strong>${PAYMENT_INFO.bank.accountNumber}</strong> <span class="copy-btn" onclick="copyText('${PAYMENT_INFO.bank.accountNumber}','Account No copied!')">Copy</span></span></div>
+      <div class="bank-row"><span>IFSC</span><span>${PAYMENT_INFO.bank.ifscCode} <span class="copy-btn" onclick="copyText('${PAYMENT_INFO.bank.ifscCode}','IFSC copied!')">Copy</span></span></div>
+      <div class="bank-row"><span>Account Type</span><span>${PAYMENT_INFO.bank.accountType}</span></div>
+      <div class="bank-row"><span>Beneficiary</span><span>${PAYMENT_INFO.bank.accountHolder}</span></div>
+    </div>
+
+    <div class="form-group"><label>Transaction ID / UTR Reference *</label><input id="txnRef" placeholder="12-digit UPI Ref or IMPS UTR"></div>
+    <div style="display:flex;gap:10px;justify-content:space-between;margin-top:14px;">
+      <button class="btn-gray" onclick="renderCheckoutStep1()">← Back</button>
+      <button class="btn-green" onclick="submitPayment()">✓ Confirm Order</button>
+    </div>`;
+}
+
+function setPayMethod(m) { paymentMethod = m; renderCheckoutStep2(); }
+
+function submitPayment() {
+  const txn = document.getElementById('txnRef').value.trim();
+  if (!txn) { showToast('Enter Transaction / UTR reference', 'error'); return; }
+
+  const subtotal = cart.reduce((s, i) => s + i.price * i.quantity, 0);
+  const orderId  = 'ORD-' + Math.floor(100000 + Math.random() * 900000);
+  const orderTime= new Date().toLocaleString('en-IN', {timeZone:'Asia/Kolkata'});
+
+  const orderData = {
+    orderId, orderTime, status: 'Processing',
+    items: cart.map(i => ({ id:i.id, name:i.name, price:i.price, qty:i.quantity })),
+    subtotal, total: subtotal,
+    paymentMethod: paymentMethod === 'upi' ? 'UPI (GPay / PhonePe)' : 'SBI Bank Transfer',
+    transactionRef: txn,
+    student: { ...deliveryInfo }
+  };
+
+  // Save order
+  const history = JSON.parse(localStorage.getItem('store_orders') || '[]');
+  history.unshift(orderData);
+  localStorage.setItem('store_orders', JSON.stringify(history));
+
+  // Send email via FormSubmit
+  sendOrderEmail(orderData);
+
+  // Clear cart
+  cart = []; saveCart(); updateCartCount(); updateCartDrawer();
+
+  renderOrderSuccess(orderData);
+}
+
+function sendOrderEmail(order) {
+  const items = order.items.map((it, i) => (i+1)+'. '+it.name+' x'+it.qty+' = ₹'+(it.price*it.qty)).join('\n');
+  const autoresponse =
+    'Hi '+order.student.custName+',\n\n'+
+    'Your Campus Store order has been placed!\n\n'+
+    'Order ID: #'+order.orderId+'\n'+
+    'Total: ₹'+order.total+' (Free Delivery)\n'+
+    'Delivery: '+order.student.custHostel+', '+order.student.custFloor+', Room '+order.student.custRoom+'\n\n'+
+    'Items:\n'+items+'\n\n'+
+    'UTR/Ref: '+order.transactionRef+'\n\n'+
+    'Estimated delivery: within 2 business days.\n\nThank you!';
+
+  fetch('https://formsubmit.co/ajax/'+PAYMENT_INFO.email, {
+    method:'POST', headers:{'Content-Type':'application/json','Accept':'application/json'},
+    body: JSON.stringify({
+      name:'Order Placed', _subject:'New Order #'+order.orderId+' by '+order.student.custName,
+      _replyto: order.student.custEmail, _template:'table', _captcha:'false',
+      _autoresponse: autoresponse,
+      'Order ID': order.orderId, 'Date': order.orderTime,
+      'Student': order.student.custName+' ('+order.student.custUid+')',
+      'Phone': order.student.custPhone, 'Email': order.student.custEmail,
+      'Delivery': order.student.custHostel+', '+order.student.custFloor+', Rm '+order.student.custRoom,
+      'Items': items, 'Total': '₹'+order.total,
+      'Payment': order.paymentMethod, 'UTR': order.transactionRef
+    })
+  }).catch(()=>{});
+}
+
+function renderOrderSuccess(order) {
+  const items = order.items.map((it,i)=>`${i+1}. ${it.name} x${it.qty} — ₹${it.price*it.qty}`).join('\n');
+  const waMsg = encodeURIComponent(
+    '🎓 *CAMPUS STORE ORDER*\n'+
+    '━━━━━━━━━━━━━━━━━━━━\n'+
+    '📦 Order ID: '+order.orderId+'\n'+
+    '📅 '+order.orderTime+'\n'+
+    '👤 '+order.student.custName+' ('+order.student.custUid+')\n'+
+    '📞 '+order.student.custPhone+'\n'+
+    '🏢 '+order.student.custHostel+', '+order.student.custFloor+', Rm '+order.student.custRoom+'\n'+
+    '━━━━━━━━━━━━━━━━━━━━\n'+
+    '🛒 Items:\n'+items+'\n'+
+    '━━━━━━━━━━━━━━━━━━━━\n'+
+    '💰 Total: ₹'+order.total+'\n'+
+    '💳 '+order.paymentMethod+'\n'+
+    '🔢 UTR: '+order.transactionRef
+  );
+
+  try { window.open('https://wa.me/'+PAYMENT_INFO.whatsapp+'?text='+waMsg, '_blank'); } catch(e){}
+
+  document.getElementById('checkoutContent').innerHTML = `
+    <div style="text-align:center;padding:10px 0;">
+      <div style="width:60px;height:60px;background:#0c831f;color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:28px;margin:0 auto 14px;">✓</div>
+      <h3 style="font-size:20px;font-weight:800;color:#111827;">Order Placed!</h3>
+      <p style="color:#0c831f;font-weight:600;margin-top:4px;">#${order.orderId}</p>
+      <p style="font-size:13px;color:#6b7280;margin-top:4px;">⚡ Delivery within 2 business days</p>
+    </div>
+
+    <div style="background:#f0fdf4;border:2px solid #86efac;border-radius:10px;padding:14px;text-align:center;margin:16px 0;">
+      <p style="font-weight:700;color:#166534;margin-bottom:10px;">📱 Send WhatsApp Confirmation</p>
+      <a href="https://wa.me/${PAYMENT_INFO.whatsapp}?text=${waMsg}" target="_blank"
+         style="background:#25d366;color:#fff;padding:10px 20px;border-radius:8px;font-weight:700;font-size:14px;text-decoration:none;display:inline-block;">
+        💬 Send on WhatsApp
+      </a>
+    </div>
+
+    <div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;padding:14px;font-size:13px;">
+      <div style="font-weight:700;margin-bottom:8px;">Order Summary</div>
+      ${order.items.map(it=>`<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px dashed #e5e7eb;"><span>${it.name} x${it.qty}</span><strong>₹${it.price*it.qty}</strong></div>`).join('')}
+      <div style="display:flex;justify-content:space-between;font-weight:700;color:#0c831f;margin-top:8px;font-size:14px;"><span>Total (Free Delivery)</span><span>₹${order.total}</span></div>
+      <div style="font-size:11px;color:#9ca3af;margin-top:8px;">
+        ${order.student.custName} • ${order.student.custHostel}, ${order.student.custFloor}, Rm ${order.student.custRoom}<br>
+        UTR: ${order.transactionRef}
+      </div>
+    </div>
+
+    <div style="display:flex;gap:10px;margin-top:16px;justify-content:center;">
+      <button class="btn-gray" onclick="window.print()">🖨 Print Receipt</button>
+      <button class="btn-green" onclick="closeCheckoutModal()">Continue Shopping</button>
+    </div>`;
+}
+
+// ============================================================
+// COUPON / TOAST / UTILS
+// ============================================================
 function copyCoupon() {
   navigator.clipboard.writeText('CAMPUS10')
-    .then(() => showToast('Coupon CAMPUS10 copied 🎓'))
-    .catch(() => showToast('Coupon: CAMPUS10'));
+    .then(()=>showToast('Coupon CAMPUS10 copied 🎓'))
+    .catch(()=>showToast('Coupon: CAMPUS10'));
+}
+
+function copyText(text, msg) {
+  navigator.clipboard.writeText(text).then(()=>showToast(msg)).catch(()=>showToast(msg));
 }
 
 let toastTimer;
@@ -757,15 +1114,19 @@ function showToast(message) {
 document.getElementById('cartOverlay').addEventListener('click', function(e) {
   if (e.target === this) closeCart();
 });
-document.getElementById('loginModal').addEventListener('click', function(e) {
-  if (e.target === this) closeLogin();
+document.getElementById('authModal').addEventListener('click', function(e) {
+  if (e.target === this) closeAuthModal();
+});
+document.getElementById('profileModal').addEventListener('click', function(e) {
+  if (e.target === this) closeProfileModal();
+});
+document.getElementById('checkoutModal').addEventListener('click', function(e) {
+  if (e.target === this) closeCheckoutModal();
 });
 
 // ============================================================
 // INIT
 // ============================================================
 renderProducts(products);
-updateCart();
-</script>
-</body>
-</html>
+updateCartCount();
+updateHeaderAuth();
